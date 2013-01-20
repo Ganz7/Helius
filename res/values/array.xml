@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    
+    <string-array  name="unitChoice">
+        <item name = "10">Celsius</item>
+        <item name = "20">Farenheit</item>
+    </string-array>
+    
+    <string-array name="unitChoiceValues">
+        <item name = "10">10</item>
+        <item name = "20">20</item>
+        
+    </string-array>
+</resources>

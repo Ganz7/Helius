@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+  <PreferenceCategory >
+  <EditTextPreference android:title="Your Location"
+                      android:key="location" 
+                      android:summary="Where are you now?"
+                      android:defaultValue="">
+      
+  </EditTextPreference>
+  </PreferenceCategory>
+  <PreferenceCategory android:key="catTwo">
+      <ListPreference 
+          android:key="unit"
+          android:title="Unit"
+          android:summary="How would you like your temperature?"
+          android:defaultValue="10"
+          android:entries="@array/unitChoice"
+          android:entryValues="@array/unitChoiceValues"
+          >
+          
+          
+      </ListPreference>
+      
+  <!--  Hidden Preferences -->
+  
+  	<EditTextPreference android:key="lastUpdate"
+      android:defaultValue="">
+      </EditTextPreference>
+  	<EditTextPreference android:key="updateOrder"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="temp_C"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="temp_F"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="condition"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="code"
+      android:defaultValue="">
+      </EditTextPreference>
+      
+      
+  
+  
+  </PreferenceCategory>
+  
+  </PreferenceScreen>
+  

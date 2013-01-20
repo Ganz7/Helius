@@ -1,0 +1,101 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/heliusMain"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0099cc"
+    tools:context=".HeliusMainActivity" >
+    
+    <RelativeLayout 
+        android:layout_width="fill_parent"
+    	android:layout_height="fill_parent"
+    	android:paddingLeft="16sp"
+    	android:paddingRight="16sp"
+    	android:paddingTop="16sp" >
+        
+        <TextView
+            android:id="@+id/location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingTop="16sp"
+            android:text="location"
+            android:textSize="30sp" />
+        
+        <ImageView
+	        android:id="@+id/weatherCon"
+	        android:layout_width="160sp"
+	        android:layout_height="160sp"
+	        android:layout_alignParentLeft="true"
+	        android:gravity="center"
+	        android:src="@drawable/cloud" 
+	        android:layout_below="@+id/location"/>
+        
+        <TextView
+	        android:id="@+id/temperature"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center_horizontal"
+	        android:text="Large"
+	        android:textSize="50sp"
+	        android:textStyle="bold" 
+	        android:gravity="center"
+	        android:layout_alignParentRight="true"
+	        android:layout_toRightOf="@+id/weatherCon"
+	        android:layout_below="@+id/location"/>
+        
+        <TextView
+	        android:id="@+id/condition"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center_horizontal"
+	        android:text="Condition"
+	        android:gravity="center"
+	        android:textSize="35sp"
+	     	android:layout_below="@+id/weatherCon"
+	     	/>
+        
+        
+        
+    </RelativeLayout>
+    
+
+    <!--
+         This FrameLayout insets its children based on system windows using
+         android:fitsSystemWindows.
+    -->
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true" >
+
+        <LinearLayout
+            android:id="@+id/fullscreen_content_controls"
+            style="?buttonBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:background="@color/black_overlay"
+            android:orientation="horizontal"
+            tools:ignore="UselessParent" >
+
+            <Button
+                android:id="@+id/refresh"
+                style="?buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/refresh" />
+            <Button
+                android:id="@+id/settings"
+                style="?buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/settings"
+                android:onClick="HeliusClickHandler" />
+        </LinearLayout>
+    </FrameLayout>
+
+</FrameLayout>
