@@ -11,7 +11,7 @@
     	android:layout_height="fill_parent"
     	android:paddingLeft="16sp"
     	android:paddingRight="16sp"
-    	android:paddingTop="16sp" >
+    	android:paddingTop="30sp" >
         
         <TextView
             android:id="@+id/location"
@@ -20,7 +20,7 @@
             android:gravity="center"
             android:paddingTop="16sp"
             android:text="location"
-            android:textSize="30sp" />
+            android:textSize="22sp" />
         
         <ImageView
 	        android:id="@+id/weatherCon"
@@ -37,7 +37,7 @@
 	        android:layout_height="wrap_content"
 	        android:layout_gravity="center_horizontal"
 	        android:text="Large"
-	        android:textSize="50sp"
+	        android:textSize="45sp"
 	        android:textStyle="bold" 
 	        android:gravity="center"
 	        android:layout_alignParentRight="true"
@@ -51,12 +51,148 @@
 	        android:layout_gravity="center_horizontal"
 	        android:text="Condition"
 	        android:gravity="center"
-	        android:textSize="35sp"
+	        android:textSize="30sp"
 	     	android:layout_below="@+id/weatherCon"
 	     	/>
-        
-        
-        
+          
+
+        <LinearLayout
+            android:id="@+id/days"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            android:layout_alignParentBottom="true"
+            android:paddingBottom="10sp" >
+
+            
+	            <TextView
+	                android:id="@+id/blah1"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="20sp"
+	                android:text="MON"
+	                 />
+	            <TextView
+	                android:id="@+id/blah2"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="20sp"
+	                android:text="TUE"
+	                 />
+	            <TextView
+	                android:id="@+id/blah3"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="20sp"
+	                android:text="WED"
+	                 />
+		    
+        </LinearLayout>
+     
+         <LinearLayout
+            android:id="@+id/Climacon"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            android:layout_above="@+id/days"        
+            android:paddingBottom="10sp"
+             >
+
+            	<ImageView
+			        android:id="@+id/weatherC"
+			        android:layout_width="25sp"
+			        android:layout_height="25sp"
+			        android:gravity="center"
+			        android:layout_weight="1"
+			        android:src="@drawable/cloud_lightning"/>
+            	<ImageView
+			        android:id="@+id/weather"
+			        android:layout_width="25sp"
+			        android:layout_height="25sp"
+			        android:gravity="center"
+			        android:layout_weight="1"
+			        android:src="@drawable/cloud"/>
+            	<ImageView
+			        android:id="@+id/weathe"
+			        android:layout_width="25sp"
+			        android:layout_height="25sp"
+			        android:gravity="center"
+			        android:layout_weight="1"
+			        android:src="@drawable/cloud_sun"/>    
+        </LinearLayout>
+    	
+        <LinearLayout
+            android:id="@+id/MaxMin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:orientation="horizontal"
+            android:layout_above="@+id/Climacon"        
+           
+             >
+            	<TextView
+	                android:id="@+id/max1"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="20sp"
+	                android:text="33"
+	                 />
+	            <TextView
+	                android:id="@+id/min1"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="15sp"
+	                android:text="23"
+	                 />
+	            <TextView
+	                android:id="@+id/max2"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="20sp"
+	                android:text="37"
+	                 />
+	            <TextView
+	                android:id="@+id/min2"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="15sp"
+	                android:text="25"
+	                 />
+	            <TextView
+	                android:id="@+id/max3"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="20sp"
+	                android:text="30"
+	                 />
+	            <TextView
+	                android:id="@+id/min3"
+	                android:gravity="center"
+	                android:layout_width="0dp"
+	                android:layout_height="wrap_content"
+	                android:layout_weight="1"
+	                android:textSize="15sp"
+	                android:text="17"
+	                 />
+         </LinearLayout>
     </RelativeLayout>
     
 
@@ -96,6 +232,8 @@
                 android:text="@string/settings"
                 android:onClick="HeliusClickHandler" />
         </LinearLayout>
+
+
     </FrameLayout>
 
 </FrameLayout>

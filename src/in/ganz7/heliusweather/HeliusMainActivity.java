@@ -498,7 +498,7 @@ public class HeliusMainActivity extends Activity {
     	Typeface numface=Typeface.createFromAsset(getAssets(),
                 "fonts/Comfortaa-Regular.ttf");
     	
-    	temp.setTypeface(face2);
+    	temp.setTypeface(numface);
     	cond.setTypeface(face2);
     	loc.setTypeface(face2);
     	
