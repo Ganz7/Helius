@@ -276,16 +276,16 @@ public class HeliusMainActivity extends Activity {
 			{
 				
 				
-				NodeList n1,n2;
+				NodeList n1,n2,predictionList;
 				String temp1 = arg0[0].replace(" ", "%20");
 				
 				
-			    String URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+temp1+"&format=xml&num_of_days=3&key=bdb4106ddf154523120210";
+			    String URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+temp1+"&format=xml&num_of_days=4&key=bdb4106ddf154523120210";
 				 
 				// XML node keys
 			     
 			     
-			     String condition,location,code,time;
+			     String condition,location,code;
 			     String arg[] = new String[10];
 			  
 			      
@@ -299,10 +299,9 @@ public class HeliusMainActivity extends Activity {
 			      
 			     
 			     n1 = doc.getElementsByTagName("current_condition");
-			     n2 = doc.getElementsByTagName("request");
 			     
-			     Element e = (Element) n1.item(0);
-			     Element e1 = (Element) n2.item(0);
+			     Element e = (Element) n1.item(0);	//Rename everything appropriately
+			     
 			     SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 			     
 			     
@@ -323,24 +322,45 @@ public class HeliusMainActivity extends Activity {
 				     edit.commit();
 			    	 
 			    	 Log.w("bajhahahah", "Conditionis null man");
-			    	 URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+"Greenwich,uk"+"&format=xml&num_of_days=3&key=bdb4106ddf154523120210";
+			    	 URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+"Greenwich,uk"+"&format=xml&num_of_days=4&key=bdb4106ddf154523120210";
 			    	 parser = new XMLParser();
 				     xml = parser.getXmlFromUrl(URL);
 				     doc = parser.getDomElement(xml);
 				     n1 = doc.getElementsByTagName("current_condition");
-				     n2 = doc.getElementsByTagName("request");
 				     
 				     e = (Element) n1.item(0);
-				     e1 = (Element) n2.item(0);
-				     //SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext()); //WHY?? Exactly!
 				    
 				     condition = parser.getValue(e, "weatherDesc"); 
 			     }
+			     
+			     n2 = doc.getElementsByTagName("request");
+			     predictionList = doc.getElementsByTagName("weather");
+			     
+			     Element e1 = (Element) n2.item(0);			     
 			     
 			     tempC = parser.getValue(e, "temp_C")+ " \u00B0"+"C";
 			     tempF = parser.getValue(e, "temp_F")+ " \u00B0"+"F";
 			     location = parser.getValue(e1, "query");
 			     code = parser.getValue(e, "weatherCode");
+			     
+			     String maxPrediction = "", minPrediction = "", codePrediction = "";
+			     
+			     for(int i = 1; i<4; i++)
+			     {
+			    	 Element prediction = (Element) predictionList.item(i);
+			    	 maxPrediction = maxPrediction +parser.getValue(prediction, "tempMaxC")+ " ";
+			    	 minPrediction = minPrediction +parser.getValue(prediction, "tempMinC")+ " ";
+			    	 codePrediction = codePrediction +parser.getValue(prediction, "weatherCode")+ " ";
+			    	 
+			    	 
+			     }
+			     Editor editor = SP.edit();
+		    	 editor.putString("maxPrediction",maxPrediction);
+		    	 editor.putString("minPrediction",minPrediction);
+		    	 editor.putString("codePrediction",codePrediction);
+		    	 editor.commit();
+		    	 
+		    	 Log.w("Predictions",maxPrediction+minPrediction+codePrediction);
 			     
 			     
 			     
@@ -415,10 +435,6 @@ public class HeliusMainActivity extends Activity {
 						result[0] = result[4];
 					else
 						result[0] = result[5];
-			     
-			     Log.w("Chosen",result[0]);
-			     Log.w("TEMP_C",result[4]);
-			     Log.w("TEMP_F",result[5]);
 				
 				 TextView tv3 = (TextView)findViewById(R.id.temperature);
 				 tv3.setText(result[0]);
@@ -426,6 +442,9 @@ public class HeliusMainActivity extends Activity {
 				 tv2.setText(result[1]);
 				 TextView tv1 = (TextView)findViewById(R.id.location);
 				 tv1.setText(result[2]);
+				 
+				 
+				 setPredictions();
 				 
 				 dialog.dismiss(); 
 				 
@@ -485,6 +504,50 @@ public class HeliusMainActivity extends Activity {
 
 	    }
 	
+	void setCurrentWeather()
+	{
+		
+	}
+	    
+	void setPredictions()
+	{
+		TextView max1 = (TextView)findViewById(R.id.max1);
+		TextView max2 = (TextView)findViewById(R.id.max2);
+		TextView max3 = (TextView)findViewById(R.id.max3);
+		TextView min1 = (TextView)findViewById(R.id.min1);
+		TextView min2 = (TextView)findViewById(R.id.min2);
+		TextView min3 = (TextView)findViewById(R.id.min3);
+		TextView day1 = (TextView)findViewById(R.id.day1);
+		TextView day2 = (TextView)findViewById(R.id.day2);
+		TextView day3 = (TextView)findViewById(R.id.day3);
+		
+		String week[] = {"SUN", "MON","TUE","WED","THU","FRI","SAT"};
+		String maxPrediction = SP.getString("maxPrediction", "");
+		String minPrediction = SP.getString("minPrediction", "");
+		String codePrediction = SP.getString("codePrediction", "");
+		String max[] = maxPrediction.split(" ");
+		String min[] = minPrediction.split(" ");
+		String code[] = codePrediction.split(" ");
+		
+		/*
+		 * Setting the Max and Min textviews 
+		 */
+		
+		max1.setText(max[0]);max2.setText(max[1]);max3.setText(max[2]);
+		min1.setText(min[0]);min2.setText(min[1]);min3.setText(min[2]);
+		/*
+		 * Setting the days
+		 */
+		int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)+1;
+		day1.setText(week[day++]); if(day == 7) day = 0;
+		day2.setText(week[day++]); if(day == 7) day = 0;
+		day3.setText(week[day++]);
+		
+		
+		
+	}
+	    
+	    
     void setFont()
     {
     	TextView temp = (TextView)findViewById(R.id.temperature);

@@ -41,6 +41,15 @@
       <EditTextPreference android:key="code"
       android:defaultValue="">
       </EditTextPreference>
+      <EditTextPreference android:key="maxPredictions"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="minPredictions"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="codePredictions"
+      android:defaultValue="">
+      </EditTextPreference>
       
       
   
