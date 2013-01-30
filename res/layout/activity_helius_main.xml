@@ -112,7 +112,7 @@
 			        android:layout_height="25sp"
 			        android:gravity="center"
 			        android:layout_weight="1"
-			        android:src="@drawable/cloud_lightning"/>
+			        android:src="@drawable/snowflake"/>
             	<ImageView
 			        android:id="@+id/weather"
 			        android:layout_width="25sp"

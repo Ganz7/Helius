@@ -28,6 +28,9 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +46,9 @@ public class HeliusMainActivity extends Activity {
 	SharedPreferences SP;
 	String currentLocation,currentUnit="10";
 	String currentTemp,tempC, tempF;
+	
+	Animation a; 
+	//a.reset();
 
 	private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
 	
@@ -55,7 +61,7 @@ public class HeliusMainActivity extends Activity {
 		setContentView(R.layout.activity_helius_main);
 		
 		setFont(); //Sets the custom fonts
-        
+		a = AnimationUtils.loadAnimation(this, R.anim.translate);
         SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         currentLocation = SP.getString("location", "");
         currentUnit = SP.getString("unit", "10");
@@ -142,24 +148,20 @@ public class HeliusMainActivity extends Activity {
 	public void onResume()
 	{
 		super.onResume();
-		Log.w("OnResume", "Welcome");
-		
 		String temp= SP.getString("location", ""),unit="";
      
         if(currentLocation == "") //Why not use currentLocation instead? YES!
         {
         	createCustomDialog().show();
-        	
         }
 		
         else if( !temp.equalsIgnoreCase(currentLocation)) //True if the location has been changed.
-		{
-			
+		{		
 			currentLocation = temp;     //--Modifying this in the doInBackground Function
-			new AsyncWeather().execute(temp);
+			new AsyncWeather().execute(currentLocation);
 		}
 		
-		else if(temp.equalsIgnoreCase(currentLocation))
+		else if(temp.equalsIgnoreCase(currentLocation)) //If the location hasn't been changed
 		{
 		
 			Calendar c = Calendar.getInstance();
@@ -173,53 +175,22 @@ public class HeliusMainActivity extends Activity {
 	        if( difference < 2)//Don't update if last update was 2 minutes before
 	        {        	
 	        		Log.w("no update!!", "lololol" );	
-	        		
-	        		ColorTheme theme = new ColorTheme(Integer.parseInt(SP.getString("code","")), SP.getString("condition", ""));
-	   			 
-	   			 
-	   			 	View view = findViewById(R.id.heliusMain);
-	   			 	view.setBackgroundColor(theme.returnBGColor());
-	        		
-	        		TextView tv3 = (TextView)findViewById(R.id.temperature);
-	        		Log.w(SP.getString("unit", "10"),"balls");		//WHY THE HELL IS THIS NOT WORKING!!!! Ohh its working now.
-	        		if(SP.getString("unit", "10").equals("10"))
-	        		{
-	        			Log.w("Yeah","Its true");
-	        			tv3.setText(SP.getString("temp_C",""));
-	        		}
-					else
-						tv3.setText(SP.getString("temp_F",""));
-		   			
-		   			TextView tv2 = (TextView)findViewById(R.id.condition);
-		   			tv2.setText(SP.getString("condition",""));
-		   			TextView tv1 = (TextView)findViewById(R.id.location);
-		   			tv1.setText(currentLocation);
+	        		setCurrentWeather();
+	        		setPredictions();
 	        }
 	        else
-	        	new AsyncWeather().execute(temp);
+	        	new AsyncWeather().execute(currentLocation);
 		}
 		
 		
-		if((unit = SP.getString("unit", "10")) != currentUnit) //Checking if the unit pref has changed
+		if((unit = SP.getString("unit", "10")) != currentUnit) //Checking if the unit preference has changed
 		{
 			Log.w("Unit","Checking pref change");
 			currentUnit = unit;
-			TextView temperature = (TextView)findViewById(R.id.temperature);
-			if(currentUnit.equals("10"))
-			{
-				Log.w("yeah","bahh");
-				currentTemp = SP.getString("temp_C", "");
-				temperature.setText(currentTemp);
-			}
-			else
-			{
-				currentTemp = SP.getString("temp_F", "");
-				temperature.setText(currentTemp);
-			}
+			setCurrentWeather();
+			setPredictions();
 		}
 	}
-	
-	
 	
 	/**
 	 * Touch listener to use for in-layout UI controls to delay hiding the
@@ -274,37 +245,37 @@ public class HeliusMainActivity extends Activity {
 			@Override
 			protected String[] doInBackground(String... arg0) 
 			{
-				
-				
+
 				NodeList n1,n2,predictionList;
 				String temp1 = arg0[0].replace(" ", "%20");
 				
-				
 			    String URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+temp1+"&format=xml&num_of_days=4&key=bdb4106ddf154523120210";
-				 
+				String URLTime = "http://www.worldweatheronline.com/feed/tz.ashx?key=bdb4106ddf154523120210&q=greenwich,uk&format=xml";
 				// XML node keys
-			     
-			     
+			   
 			     String condition,location,code;
 			     String arg[] = new String[10];
 			  
-			      
 			     XMLParser parser = new XMLParser();
 			     String xml = parser.getXmlFromUrl(URL); // getting XML
 			     if(xml == null)								//HOW ARE YOU GONNA HANDLE THIS??????
 			     {
 			    	 Log.w("lololol", "XML IS NULL BITCH");
+			    	 View view = findViewById(R.id.heliusMain);
+			    	 view.post(new Runnable() {
+			    		  public void run() {
+			    			  Toast toast = Toast.makeText(getApplicationContext(), "" +
+			    			  		"Oops! There seems to be a problem with the connection.", Toast.LENGTH_LONG); 
+			 			     toast.show();
+			    		  }
+			    		});
+			    	 return null;
 			     }
 			     Document doc = parser.getDomElement(xml); // getting DOM element
-			      
-			     
 			     n1 = doc.getElementsByTagName("current_condition");
-			     
 			     Element e = (Element) n1.item(0);	//Rename everything appropriately
-			     
 			     SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-			     
-			     
+					     
 			     condition = parser.getValue(e, "weatherDesc");
 			     
 			     if(condition == "") //City not found
@@ -343,46 +314,47 @@ public class HeliusMainActivity extends Activity {
 			     location = parser.getValue(e1, "query");
 			     code = parser.getValue(e, "weatherCode");
 			     
-			     String maxPrediction = "", minPrediction = "", codePrediction = "";
+			     //ColorTheme class for background color info.
+			     Log.w("baloss",SP.getString("condition", ""));
+				 ColorTheme theme = new ColorTheme(Integer.parseInt(code), SP.getString("condition",""),SP.getString("location", ""));
+				 
 			     
-			     for(int i = 1; i<4; i++)
+			     Editor edit = SP.edit();
+			     edit.putString("bgColor", String.valueOf(theme.BGround));
+				 edit.putString("temp_C", tempC);
+				 edit.putString("temp_F", tempF);
+				 edit.putString("condition", condition);
+				 edit.putString("location", location);
+				 edit.putString("code", code);
+				 edit.commit();
+				 
+				 
+				 
+				 currentLocation = location; //Keeping tabs on the current location
+			     
+			     String maxPredictionC = "", minPredictionC = "", maxPredictionF="",minPredictionF="",codePrediction = "";
+			     
+			     for(int i=1; i<4; i++)
 			     {
 			    	 Element prediction = (Element) predictionList.item(i);
-			    	 maxPrediction = maxPrediction +parser.getValue(prediction, "tempMaxC")+ " ";
-			    	 minPrediction = minPrediction +parser.getValue(prediction, "tempMinC")+ " ";
+			    	 maxPredictionC = maxPredictionC +parser.getValue(prediction, "tempMaxC")+ " ";
+			    	 minPredictionC = minPredictionC +parser.getValue(prediction, "tempMinC")+ " ";
 			    	 codePrediction = codePrediction +parser.getValue(prediction, "weatherCode")+ " ";
-			    	 
+			    	 maxPredictionF = maxPredictionF +parser.getValue(prediction, "tempMaxF")+ " ";
+			    	 minPredictionF = minPredictionF +parser.getValue(prediction, "tempMinF")+ " ";
 			    	 
 			     }
 			     Editor editor = SP.edit();
-		    	 editor.putString("maxPrediction",maxPrediction);
-		    	 editor.putString("minPrediction",minPrediction);
+		    	 editor.putString("maxPredictionC",maxPredictionC);
+		    	 editor.putString("minPredictionC",minPredictionC);
+		    	 editor.putString("maxPredictionF",maxPredictionF);
+		    	 editor.putString("minPredictionF",minPredictionF);
 		    	 editor.putString("codePrediction",codePrediction);
 		    	 editor.commit();
 		    	 
-		    	 Log.w("Predictions",maxPrediction+minPrediction+codePrediction);
-			     
-			     
-			     
-			     for(int i = 0; i<location.length();i++)
-			     {
-			    	 if(location.charAt(i) == ',')
-			    	 {
-			    		 String a = location.substring(0, i);
-			    		 location = a;
-			    		 break;
-			    	 }
-			     }
-			     
-			     
-			     arg[0] = "";
-			     arg[1] = condition;
-			     arg[2] = location;
-			     arg[3] = code;
-			     arg[4] = tempC;
-			     arg[5] = tempF;
-			     	
-				
+		    	 Log.w("Predictions",maxPredictionC+minPredictionC+codePrediction);
+		    	 
+				//return null;
 				return arg;
 			}
 			
@@ -396,74 +368,26 @@ public class HeliusMainActivity extends Activity {
 			
 			protected void onPostExecute(String result[])
 			{
-				
-				/*if(result == null)					//No more nulls baby
-				{
-					Log.w("llolplplplpllol", "Result null");
-					result = new String[10];
-					result[4] = SP.getString("temp_C", "");
-					result[5] = SP.getString("temp_F", "");
-					result[3] = SP.getString("code","");
-					result[1] = SP.getString("condition","");
-					result[2] = SP.getString("location","");
-					 
-				}*/
-				//else
-				{
-					Log.w("llolplplplpllol", "Result NOT null");
-					Calendar c = Calendar.getInstance();
-					SimpleDateFormat df = new SimpleDateFormat("HH:mm   MMM dd, ''yy");
-			        String formattedDate = df.format(c.getTime());
-			        SimpleDateFormat rev = new SimpleDateFormat("yyMMddHHmm");
-			        String orderDate = rev.format(c.getTime());
+				Calendar c = Calendar.getInstance();
+				SimpleDateFormat df = new SimpleDateFormat("HH:mm   MMM dd, ''yy");
+		        String formattedDate = df.format(c.getTime());
+		        SimpleDateFormat rev = new SimpleDateFormat("yyMMddHHmm");
+		        String orderDate = rev.format(c.getTime());
+		        
+		        Editor editor = SP.edit();
+		        editor.putString("lastUpdate",formattedDate);
+		        editor.putString("updateOrder", orderDate);
+		        editor.commit();
 			        
-			        Editor editor = SP.edit();
-			        editor.putString("lastUpdate",formattedDate);
-			        editor.putString("updateOrder", orderDate);
-			        editor.commit();
-				}
-				int code;
-				 code = Integer.parseInt(result[3]);
-				
-				 ColorTheme theme = new ColorTheme(code, result[1]);
+				setCurrentWeather();
+				setPredictions();
 				 
-				 
-				 View view = findViewById(R.id.heliusMain);
-			     view.setBackgroundColor(theme.returnBGColor());
-			     
-			     if(SP.getString("unit", "10").equals("10") )
-						result[0] = result[4];
-					else
-						result[0] = result[5];
-				
-				 TextView tv3 = (TextView)findViewById(R.id.temperature);
-				 tv3.setText(result[0]);
-				 TextView tv2 = (TextView)findViewById(R.id.condition);
-				 tv2.setText(result[1]);
-				 TextView tv1 = (TextView)findViewById(R.id.location);
-				 tv1.setText(result[2]);
-				 
-				 
-				 setPredictions();
-				 
-				 dialog.dismiss(); 
-				 
-				 Editor edit = SP.edit();
-				 edit.putString("temp_C", result[4]);
-				 edit.putString("temp_F", result[5]);
-				 edit.putString("condition", result[1]);
-				 edit.putString("location", result[2]);
-				 edit.putString("code", result[3]);
-				 edit.commit();
+				dialog.dismiss();  
 				 
 			}
-	    }
-	    
+	    }    
 	    /*
-	     * 
-	     * Dialoggg
-	     * 
-	     * 
+	     * Dialoggg 
 	     */
 	    Dialog createCustomDialog()
 	    {
@@ -479,17 +403,13 @@ public class HeliusMainActivity extends Activity {
 	    	dialogOK.setOnClickListener(new OnClickListener() {
 				public void onClick(View v) {
 					EditText location = (EditText) dialog.findViewById(R.id.dialogText);
-				
-					Editor editor = SP.edit();
-					editor.putString("location",location.getText().toString());
-					editor.commit();
-					
+		
 					InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
 	    		    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
 	    		    dialog.hide();   		    
 	    		    
 	    			new AsyncWeather().execute(location.getText().toString());
-	    			currentLocation = location.getText().toString();
+	    			//currentLocation = location.getText().toString(); //Moving this line to asynctask
 					
 					dialog.dismiss();
 				}
@@ -507,10 +427,43 @@ public class HeliusMainActivity extends Activity {
 	void setCurrentWeather()
 	{
 		
+		Animation animation = new TranslateAnimation(700,0,0, 0);
+		animation.setDuration(1500);
+		TextView temperatureTV = (TextView)findViewById(R.id.temperature);
+		TextView conditionTV = (TextView)findViewById(R.id.condition);
+		TextView locationTV = (TextView)findViewById(R.id.location);
+		//Setting the background
+	    View view = findViewById(R.id.heliusMain);
+	    view.setBackgroundColor(Integer.parseInt(SP.getString("bgColor", "")));
+		
+		//Setting the temperature, location and condition
+		conditionTV.setText(SP.getString("condition",""));
+		conditionTV.startAnimation(animation);
+		
+		if(SP.getString("unit", "10").equals("10") )
+			temperatureTV.setText(SP.getString("temp_C", ""));
+		else
+			temperatureTV.setText(SP.getString("temp_F", ""));
+		temperatureTV.startAnimation(animation);
+		String location = SP.getString("location","");
+		for(int i = 0; i<location.length();i++)
+	     {
+	    	 if(location.charAt(i) == ',')
+	    	 {
+	    		 String temporary = location.substring(0, i);
+	    		 location = temporary;
+	    		 break;
+	    	 }
+	     }
+		locationTV.setText(location);
+		locationTV.startAnimation(animation);
+		
 	}
 	    
 	void setPredictions()
 	{
+		String week[] = {"SUN", "MON","TUE","WED","THU","FRI","SAT"};
+		String maxPrediction,minPrediction;
 		TextView max1 = (TextView)findViewById(R.id.max1);
 		TextView max2 = (TextView)findViewById(R.id.max2);
 		TextView max3 = (TextView)findViewById(R.id.max3);
@@ -521,10 +474,19 @@ public class HeliusMainActivity extends Activity {
 		TextView day2 = (TextView)findViewById(R.id.day2);
 		TextView day3 = (TextView)findViewById(R.id.day3);
 		
-		String week[] = {"SUN", "MON","TUE","WED","THU","FRI","SAT"};
-		String maxPrediction = SP.getString("maxPrediction", "");
-		String minPrediction = SP.getString("minPrediction", "");
+		if(SP.getString("unit", "10").equals("10"))
+		{
+			maxPrediction = SP.getString("maxPredictionC", "");
+			minPrediction = SP.getString("minPredictionC", "");
+		}
+		else
+		{
+			maxPrediction = SP.getString("maxPredictionF", "");
+			minPrediction = SP.getString("minPredictionF", "");
+		}
+		
 		String codePrediction = SP.getString("codePrediction", "");
+		
 		String max[] = maxPrediction.split(" ");
 		String min[] = minPrediction.split(" ");
 		String code[] = codePrediction.split(" ");
@@ -538,16 +500,27 @@ public class HeliusMainActivity extends Activity {
 		/*
 		 * Setting the days
 		 */
-		int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK)+1;
+		int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+		if(day == 7) day = 0;
 		day1.setText(week[day++]); if(day == 7) day = 0;
 		day2.setText(week[day++]); if(day == 7) day = 0;
 		day3.setText(week[day++]);
 		
-		
-		
+		//Firing up the animations
+		max1.startAnimation(a);
+		min1.startAnimation(a);
+		day1.startAnimation(a);
+		try{Thread.sleep(500);}catch(Exception e){e.printStackTrace();}
+		max2.startAnimation(a);
+		min2.startAnimation(a);
+		day2.startAnimation(a);
+		try{Thread.sleep(500);}catch(Exception e){e.printStackTrace();}
+		max3.startAnimation(a);
+		min3.startAnimation(a);
+		day3.startAnimation(a);
+		mSystemUiHider.hide();
 	}
-	    
-	    
+  
     void setFont()
     {
     	TextView temp = (TextView)findViewById(R.id.temperature);
