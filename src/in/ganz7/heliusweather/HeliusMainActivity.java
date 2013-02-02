@@ -320,7 +320,8 @@ public class HeliusMainActivity extends Activity {
 				 
 			     
 			     Editor edit = SP.edit();
-			     edit.putString("bgColor", String.valueOf(theme.BGround));
+			     edit.putString("bgColor", String.valueOf(theme.returnBGColor()));
+			     edit.putString("txtColor", String.valueOf(theme.returnTextColor()));
 				 edit.putString("temp_C", tempC);
 				 edit.putString("temp_F", tempF);
 				 edit.putString("condition", condition);
@@ -426,12 +427,17 @@ public class HeliusMainActivity extends Activity {
 	
 	void setCurrentWeather()
 	{
-		
+		int textColor = Integer.parseInt(SP.getString("txtColor", ""));
 		Animation animation = new TranslateAnimation(700,0,0, 0);
 		animation.setDuration(1500);
 		TextView temperatureTV = (TextView)findViewById(R.id.temperature);
 		TextView conditionTV = (TextView)findViewById(R.id.condition);
 		TextView locationTV = (TextView)findViewById(R.id.location);
+		//Setting the foreGround
+		temperatureTV.setTextColor(textColor);
+		conditionTV.setTextColor(textColor);
+		locationTV.setTextColor(textColor);
+		
 		//Setting the background
 	    View view = findViewById(R.id.heliusMain);
 	    view.setBackgroundColor(Integer.parseInt(SP.getString("bgColor", "")));
@@ -462,6 +468,7 @@ public class HeliusMainActivity extends Activity {
 	    
 	void setPredictions()
 	{
+		int textColor = Integer.parseInt(SP.getString("txtColor", ""));
 		String week[] = {"SUN", "MON","TUE","WED","THU","FRI","SAT"};
 		String maxPrediction,minPrediction;
 		TextView max1 = (TextView)findViewById(R.id.max1);
@@ -473,6 +480,10 @@ public class HeliusMainActivity extends Activity {
 		TextView day1 = (TextView)findViewById(R.id.day1);
 		TextView day2 = (TextView)findViewById(R.id.day2);
 		TextView day3 = (TextView)findViewById(R.id.day3);
+		
+		max1.setTextColor(textColor);max2.setTextColor(textColor);max3.setTextColor(textColor);
+		min1.setTextColor(textColor);min2.setTextColor(textColor);min3.setTextColor(textColor);
+		day1.setTextColor(textColor);day2.setTextColor(textColor);day3.setTextColor(textColor);
 		
 		if(SP.getString("unit", "10").equals("10"))
 		{
@@ -490,17 +501,16 @@ public class HeliusMainActivity extends Activity {
 		String max[] = maxPrediction.split(" ");
 		String min[] = minPrediction.split(" ");
 		String code[] = codePrediction.split(" ");
-		
 		/*
 		 * Setting the Max and Min textviews 
 		 */
-		
 		max1.setText(max[0]);max2.setText(max[1]);max3.setText(max[2]);
 		min1.setText(min[0]);min2.setText(min[1]);min3.setText(min[2]);
 		/*
 		 * Setting the days
 		 */
 		int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
+		Log.w("day",String.valueOf(day));
 		if(day == 7) day = 0;
 		day1.setText(week[day++]); if(day == 7) day = 0;
 		day2.setText(week[day++]); if(day == 7) day = 0;
@@ -518,6 +528,7 @@ public class HeliusMainActivity extends Activity {
 		max3.startAnimation(a);
 		min3.startAnimation(a);
 		day3.startAnimation(a);
+		
 		mSystemUiHider.hide();
 	}
   
@@ -537,8 +548,5 @@ public class HeliusMainActivity extends Activity {
     	temp.setTypeface(numface);
     	cond.setTypeface(face2);
     	loc.setTypeface(face2);
-    	
-    	cond.setTextColor(0xFF0099cc);
-    	loc.setTextColor(0xFF0099cc);
     }   
 }

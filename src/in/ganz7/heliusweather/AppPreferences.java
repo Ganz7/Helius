@@ -26,6 +26,7 @@ public class AppPreferences extends PreferenceActivity {
         EditTextPreference pref8 = (EditTextPreference) findPreference("minPredictionC");
         EditTextPreference pref9 = (EditTextPreference) findPreference("codePredictions");
         EditTextPreference pref10 = (EditTextPreference) findPreference("bgColor");
+        EditTextPreference pref11 = (EditTextPreference) findPreference("txtColor");
         
         /*
          * Hides the preferences from showing up on the Preferences Activity
@@ -40,6 +41,7 @@ public class AppPreferences extends PreferenceActivity {
         mCategory.removePreference(pref8);
         mCategory.removePreference(pref9);
         mCategory.removePreference(pref10);
+        mCategory.removePreference(pref11);
         
     }
 

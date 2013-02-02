@@ -53,6 +53,9 @@
       <EditTextPreference android:key="bgColor"
       android:defaultValue="">
       </EditTextPreference>
+      <EditTextPreference android:key="txtColor"
+      android:defaultValue="">
+      </EditTextPreference>
       
       
   

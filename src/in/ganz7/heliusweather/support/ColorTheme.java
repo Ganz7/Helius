@@ -35,7 +35,7 @@ public class ColorTheme
 	{
 		return TextColor;
 	}
-	public void setTime() //What if there is no access to the internet? Check that out. Deal with it/
+	public void setTime() //What if there is no access to the internet? Check that out. Deal with it!
 	{
 		NodeList localTimeNode;
 		location = location.replace(" ", "%20");
@@ -66,38 +66,51 @@ public class ColorTheme
 			case 329: case 326: case 323: case 320: case 317: case 314: case 311: case 284: case 281: case 230: case 260: case 227:
 			case 179:
 				BGround = 0xFF8D38C9; //Violet
+				TextColor = 0xFFF9F9F9;
 			break;
 			//heavy rain stuff
 			case 359: case 356: case 389: case 308: case 305: case 302: case 299:
 				BGround = 0xFF707070; //Deep Grey
+				TextColor = 0xFFFFFFFF;
 			break;
 			//light rain
 			case 353: case 386:	case 296: case 293: case 266: case 263: case 200: case 185: case 182: case 176:
-				BGround = 0xFFE3E3E3; 
+				BGround = 0xFF488AC7; //Steel Blue
+				TextColor = 0xFFFFFFFF;
 			break;	
 			//fog
 			case 248: case 143:
-				BGround = 0xFFC9C9C9;
+				BGround = 0xFFE56717; //Orange
+				TextColor = 0xFFFFFFFF;
 			break;	
 			//cloudy
 			case 119: case 116: case 122:
 				BGround = 0xFFF5F5F5;
+				TextColor = 0xFF00A6DE;
 			break;
 			//clear/sunny
 			case 113:
 				if(condition.equalsIgnoreCase("Sunny"))
+				{
 					BGround = 0xFFFFE100;
+					TextColor = 0xFF333333;
+				}
 				else
-					BGround = 0xFF00A6DE; //Blueish blue
+				{
+					BGround = 0xFF00A6DE;	//Blueish blue
+					TextColor = 0xFFFFFFFF;
+				}
 			break;			
 		}
 		if((HHmmInt > 1800 && HHmmInt<2000) || (HHmmInt > 0400 && HHmmInt <0700 )) //Twilight 
 		{
-			BGround = 0xFFDB1A68;	//Deep Maroon? idk.
+			BGround = 0xFFDB1A68;//Deep Maroon? idk.
+			TextColor = 0xFFFFFFFF;
 		}
 		if(HHmmInt > 2000 || HHmmInt < 0400) //Night
 		{
 			BGround = 0xFF000000;
+			TextColor = 0xFF00A6DE;
 		}
 	}
 	
