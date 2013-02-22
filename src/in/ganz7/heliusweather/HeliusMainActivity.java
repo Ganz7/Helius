@@ -34,6 +34,7 @@ import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -250,7 +251,7 @@ public class HeliusMainActivity extends Activity {
 				String temp1 = arg0[0].replace(" ", "%20");
 				
 			    String URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+temp1+"&format=xml&num_of_days=4&key=bdb4106ddf154523120210";
-				String URLTime = "http://www.worldweatheronline.com/feed/tz.ashx?key=bdb4106ddf154523120210&q=greenwich,uk&format=xml";
+				
 				// XML node keys
 			   
 			     String condition,location,code;
@@ -303,7 +304,6 @@ public class HeliusMainActivity extends Activity {
 				    
 				     condition = parser.getValue(e, "weatherDesc"); 
 			     }
-			     
 			     n2 = doc.getElementsByTagName("request");
 			     predictionList = doc.getElementsByTagName("weather");
 			     
@@ -314,24 +314,8 @@ public class HeliusMainActivity extends Activity {
 			     location = parser.getValue(e1, "query");
 			     code = parser.getValue(e, "weatherCode");
 			     
-			     //ColorTheme class for background color info.
-			     Log.w("baloss",SP.getString("condition", ""));
-				 ColorTheme theme = new ColorTheme(Integer.parseInt(code), SP.getString("condition",""),SP.getString("location", ""));
-				 
 			     
-			     Editor edit = SP.edit();
-			     edit.putString("bgColor", String.valueOf(theme.returnBGColor()));
-			     edit.putString("txtColor", String.valueOf(theme.returnTextColor()));
-				 edit.putString("temp_C", tempC);
-				 edit.putString("temp_F", tempF);
-				 edit.putString("condition", condition);
-				 edit.putString("location", location);
-				 edit.putString("code", code);
-				 edit.commit();
-				 
-				 
-				 
-				 currentLocation = location; //Keeping tabs on the current location
+			     currentLocation = location; //Keeping tabs on the current location
 			     
 			     String maxPredictionC = "", minPredictionC = "", maxPredictionF="",minPredictionF="",codePrediction = "";
 			     
@@ -346,15 +330,35 @@ public class HeliusMainActivity extends Activity {
 			    	 
 			     }
 			     Editor editor = SP.edit();
+			     editor.putString("temp_C", tempC);
+				 editor.putString("temp_F", tempF);
+				 editor.putString("condition", condition);
+				 editor.putString("location", location);
+				 editor.putString("code", code);
 		    	 editor.putString("maxPredictionC",maxPredictionC);
 		    	 editor.putString("minPredictionC",minPredictionC);
 		    	 editor.putString("maxPredictionF",maxPredictionF);
 		    	 editor.putString("minPredictionF",minPredictionF);
-		    	 editor.putString("codePrediction",codePrediction);
+		    	 editor.putString("codePredictions",codePrediction);
 		    	 editor.commit();
 		    	 
-		    	 Log.w("Predictions",maxPredictionC+minPredictionC+codePrediction);
-		    	 
+		    	 Log.w("Predictions",maxPredictionC+minPredictionC+"1"+codePrediction);
+			     
+			     //ColorTheme class for theming info.
+			     Log.w("baloss",SP.getString("condition", ""));
+				 ColorTheme theme = new ColorTheme(Integer.parseInt(code), SP.getString("condition",""),
+						 SP.getString("location", ""),SP.getString("codePredictions", ""));
+				 
+			     
+			     Editor edit = SP.edit();
+			     edit.putString("bgColor", String.valueOf(theme.returnBGColor()));
+			     edit.putString("txtColor", String.valueOf(theme.returnTextColor()));
+			     edit.putString("wIcon", String.valueOf(theme.returnIcon()));
+		
+				 edit.putString("pIcon1", String.valueOf(theme.iconSet[0]));
+			     edit.putString("pIcon2", String.valueOf(theme.iconSet[1]));
+			     edit.putString("pIcon3", String.valueOf(theme.iconSet[2]));
+			     edit.commit();
 				//return null;
 				return arg;
 			}
@@ -464,12 +468,15 @@ public class HeliusMainActivity extends Activity {
 		locationTV.setText(location);
 		locationTV.startAnimation(animation);
 		
+		ImageView image = (ImageView) findViewById(R.id.weatherCon);
+		image.setImageResource(Integer.parseInt(SP.getString("wIcon", "")));
+		
 	}
 	    
 	void setPredictions()
 	{
 		int textColor = Integer.parseInt(SP.getString("txtColor", ""));
-		String week[] = {"SUN", "MON","TUE","WED","THU","FRI","SAT"};
+		String week[] = {"MON","TUE","WED","THU","FRI","SAT","SUN"};
 		String maxPrediction,minPrediction;
 		TextView max1 = (TextView)findViewById(R.id.max1);
 		TextView max2 = (TextView)findViewById(R.id.max2);
@@ -495,12 +502,10 @@ public class HeliusMainActivity extends Activity {
 			maxPrediction = SP.getString("maxPredictionF", "");
 			minPrediction = SP.getString("minPredictionF", "");
 		}
-		
-		String codePrediction = SP.getString("codePrediction", "");
+
 		
 		String max[] = maxPrediction.split(" ");
 		String min[] = minPrediction.split(" ");
-		String code[] = codePrediction.split(" ");
 		/*
 		 * Setting the Max and Min textviews 
 		 */
@@ -516,6 +521,13 @@ public class HeliusMainActivity extends Activity {
 		day2.setText(week[day++]); if(day == 7) day = 0;
 		day3.setText(week[day++]);
 		
+		//Setting the weather icons
+		ImageView pIcon1 = (ImageView) findViewById(R.id.pIcon1);
+		ImageView pIcon2 = (ImageView) findViewById(R.id.pIcon2);
+		ImageView pIcon3 = (ImageView) findViewById(R.id.pIcon3);
+		pIcon1.setImageResource(Integer.parseInt(SP.getString("pIcon1", "")));
+		pIcon2.setImageResource(Integer.parseInt(SP.getString("pIcon2", "")));
+		pIcon3.setImageResource(Integer.parseInt(SP.getString("pIcon3", "")));
 		//Firing up the animations
 		max1.startAnimation(a);
 		min1.startAnimation(a);

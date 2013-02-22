@@ -56,8 +56,18 @@
       <EditTextPreference android:key="txtColor"
       android:defaultValue="">
       </EditTextPreference>
-      
-      
+      <EditTextPreference android:key="wIcon"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="pIcon1"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="pIcon2"
+      android:defaultValue="">
+      </EditTextPreference>
+      <EditTextPreference android:key="pIcon3"
+      android:defaultValue="">
+      </EditTextPreference>
   
   
   </PreferenceCategory>
