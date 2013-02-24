@@ -28,6 +28,7 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
@@ -48,8 +49,9 @@ public class HeliusMainActivity extends Activity {
 	String currentLocation,currentUnit="10";
 	String currentTemp,tempC, tempF;
 	
-	Animation a; 
-	//a.reset();
+	Animation a; 			//Could the problem be due to this? This is used in the set predictions class for the animations.
+							//I guess i could declare and initialize in that function. 
+	
 
 	private static final int HIDER_FLAGS = SystemUiHider.FLAG_HIDE_NAVIGATION;
 	
@@ -133,15 +135,12 @@ public class HeliusMainActivity extends Activity {
 		// while interacting with the UI.
 		findViewById(R.id.settings).setOnTouchListener(
 				mDelayHideTouchListener);
-	}//End of onCreate
+	}
 
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {
 		super.onPostCreate(savedInstanceState);
 
-		// Trigger the initial hide() shortly after the activity has been
-		// created, to briefly hint to the user that UI controls
-		// are available.
 		delayedHide(100);
 	}
 
@@ -184,7 +183,7 @@ public class HeliusMainActivity extends Activity {
 		}
 		
 		
-		if((unit = SP.getString("unit", "10")) != currentUnit) //Checking if the unit preference has changed
+		if((unit = SP.getString("unit", "10")) != currentUnit) //Checking if the unit preference has changed - Celsius or FarenH
 		{
 			Log.w("Unit","Checking pref change");
 			currentUnit = unit;
@@ -192,6 +191,26 @@ public class HeliusMainActivity extends Activity {
 			setPredictions();
 		}
 	}
+	
+	@Override
+    protected void onDestroy() {
+    	super.onDestroy();
+
+	    //unbindDrawables(findViewById(R.id.heliusMain)); //Freeing up le memory. Included to deal with the OutOfMemoryError.
+	    //System.gc();
+    }
+
+    private void unbindDrawables(View view) {
+        if (view.getBackground() != null) {
+        view.getBackground().setCallback(null);
+        }
+        if (view instanceof ViewGroup) {
+            for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
+            unbindDrawables(((ViewGroup) view).getChildAt(i));
+            }
+        ((ViewGroup) view).removeAllViews();
+        }
+    }
 	
 	/**
 	 * Touch listener to use for in-layout UI controls to delay hiding the
@@ -224,9 +243,7 @@ public class HeliusMainActivity extends Activity {
 		mHideHandler.removeCallbacks(mHideRunnable);
 		mHideHandler.postDelayed(mHideRunnable, delayMillis);
 	}
-	
-	
-	
+		
 	public void HeliusClickHandler(View view)
     {
     	switch(view.getId())
@@ -243,14 +260,22 @@ public class HeliusMainActivity extends Activity {
 	    {
 	    	ProgressDialog dialog = new ProgressDialog (HeliusMainActivity.this);
 
+	    	/*
+	    	 * Requests the xml containing the weather info and parses it using a helper class XMLParser
+	    	 * Writes all the values to the SharedPref Object SP.
+	    	 * Calls the ColorTheme class object to fix the bgcolor and images and stuff.
+	    	 * 
+	    	 * For setting the images, ColorTheme assigns it to an integer, since R.drawable.resource objects are int
+	    	 * and returns it here. No issue in that, since the imageview get set correctly. 
+	    	 */
 			@Override
 			protected String[] doInBackground(String... arg0) 
 			{
 
-				NodeList n1,n2,predictionList;
-				String temp1 = arg0[0].replace(" ", "%20");
+				NodeList currentWeatherNodeList, currentLocationNodeList, predictionList;
+				String locationRequest = arg0[0].replace(" ", "%20");
 				
-			    String URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+temp1+"&format=xml&num_of_days=4&key=bdb4106ddf154523120210";
+			    String URL = "http://free.worldweatheronline.com/feed/weather.ashx?q="+locationRequest+"&format=xml&num_of_days=4&key=bdb4106ddf154523120210";
 				
 				// XML node keys
 			   
@@ -259,7 +284,7 @@ public class HeliusMainActivity extends Activity {
 			  
 			     XMLParser parser = new XMLParser();
 			     String xml = parser.getXmlFromUrl(URL); // getting XML
-			     if(xml == null)								//HOW ARE YOU GONNA HANDLE THIS??????
+			     if(xml == null)						//HOW ARE YOU GONNA HANDLE THIS?????? I mean a proper way. 
 			     {
 			    	 Log.w("lololol", "XML IS NULL BITCH");
 			    	 View view = findViewById(R.id.heliusMain);
@@ -273,13 +298,13 @@ public class HeliusMainActivity extends Activity {
 			    	 return null;
 			     }
 			     Document doc = parser.getDomElement(xml); // getting DOM element
-			     n1 = doc.getElementsByTagName("current_condition");
-			     Element e = (Element) n1.item(0);	//Rename everything appropriately
+			     currentWeatherNodeList = doc.getElementsByTagName("current_condition");
+			     Element e = (Element) currentWeatherNodeList.item(0);	//Rename everything appropriately
 			     SP = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 					     
 			     condition = parser.getValue(e, "weatherDesc");
 			     
-			     if(condition == "") //City not found
+			     if(condition == "") //City not found. Set Greenwich
 			     {
 			    	 View view = findViewById(R.id.heliusMain);
 			    	 view.post(new Runnable() {
@@ -298,24 +323,40 @@ public class HeliusMainActivity extends Activity {
 			    	 parser = new XMLParser();
 				     xml = parser.getXmlFromUrl(URL);
 				     doc = parser.getDomElement(xml);
-				     n1 = doc.getElementsByTagName("current_condition");
+				     currentWeatherNodeList = doc.getElementsByTagName("current_condition");
 				     
-				     e = (Element) n1.item(0);
+				     e = (Element) currentWeatherNodeList.item(0);
 				    
 				     condition = parser.getValue(e, "weatherDesc"); 
 			     }
-			     n2 = doc.getElementsByTagName("request");
+			     
+			     currentLocationNodeList = doc.getElementsByTagName("request");
 			     predictionList = doc.getElementsByTagName("weather");
 			     
-			     Element e1 = (Element) n2.item(0);			     
+			     Element e1 = (Element) currentLocationNodeList.item(0);			     
 			     
 			     tempC = parser.getValue(e, "temp_C")+ " \u00B0"+"C";
 			     tempF = parser.getValue(e, "temp_F")+ " \u00B0"+"F";
 			     location = parser.getValue(e1, "query");
 			     code = parser.getValue(e, "weatherCode");
 			     
+			     //ColorTheme class for background color info.
+			     Log.w("baloss",SP.getString("condition", ""));
+				 ColorTheme theme = new ColorTheme(Integer.parseInt(code), SP.getString("condition",""),SP.getString("location", ""));
+				 
 			     
-			     currentLocation = location; //Keeping tabs on the current location
+			     Editor edit = SP.edit();
+			     edit.putString("bgColor", String.valueOf(theme.returnBGColor()));
+			     edit.putString("txtColor", String.valueOf(theme.returnTextColor()));
+			     edit.putString("wIcon", String.valueOf(theme.returnWIcon()));
+				 edit.putString("temp_C", tempC);
+				 edit.putString("temp_F", tempF);
+				 edit.putString("condition", condition);
+				 edit.putString("location", location);
+				 edit.putString("code", code);
+				 edit.commit();
+				  
+				 currentLocation = location; //Keeping tabs on the current location
 			     
 			     String maxPredictionC = "", minPredictionC = "", maxPredictionF="",minPredictionF="",codePrediction = "";
 			     
@@ -330,11 +371,6 @@ public class HeliusMainActivity extends Activity {
 			    	 
 			     }
 			     Editor editor = SP.edit();
-			     editor.putString("temp_C", tempC);
-				 editor.putString("temp_F", tempF);
-				 editor.putString("condition", condition);
-				 editor.putString("location", location);
-				 editor.putString("code", code);
 		    	 editor.putString("maxPredictionC",maxPredictionC);
 		    	 editor.putString("minPredictionC",minPredictionC);
 		    	 editor.putString("maxPredictionF",maxPredictionF);
@@ -342,23 +378,8 @@ public class HeliusMainActivity extends Activity {
 		    	 editor.putString("codePredictions",codePrediction);
 		    	 editor.commit();
 		    	 
-		    	 Log.w("Predictions",maxPredictionC+minPredictionC+"1"+codePrediction);
-			     
-			     //ColorTheme class for theming info.
-			     Log.w("baloss",SP.getString("condition", ""));
-				 ColorTheme theme = new ColorTheme(Integer.parseInt(code), SP.getString("condition",""),
-						 SP.getString("location", ""),SP.getString("codePredictions", ""));
-				 
-			     
-			     Editor edit = SP.edit();
-			     edit.putString("bgColor", String.valueOf(theme.returnBGColor()));
-			     edit.putString("txtColor", String.valueOf(theme.returnTextColor()));
-			     edit.putString("wIcon", String.valueOf(theme.returnIcon()));
-		
-				 edit.putString("pIcon1", String.valueOf(theme.iconSet[0]));
-			     edit.putString("pIcon2", String.valueOf(theme.iconSet[1]));
-			     edit.putString("pIcon3", String.valueOf(theme.iconSet[2]));
-			     edit.commit();
+		    	 Log.w("Predictions",maxPredictionC+minPredictionC+codePrediction);
+		    	 
 				//return null;
 				return arg;
 			}
@@ -370,7 +391,10 @@ public class HeliusMainActivity extends Activity {
 		        dialog.setCancelable(false);
 		        dialog.show();
 		     }
-			
+			/*
+			 * Updates the access times
+			 * And calls the methods which set the weather on the viewgroup
+			 */
 			protected void onPostExecute(String result[])
 			{
 				Calendar c = Calendar.getInstance();
@@ -392,7 +416,7 @@ public class HeliusMainActivity extends Activity {
 			}
 	    }    
 	    /*
-	     * Dialoggg 
+	     * Dialog which requests the location during initial app start.
 	     */
 	    Dialog createCustomDialog()
 	    {
@@ -428,7 +452,9 @@ public class HeliusMainActivity extends Activity {
 	    	return dialog;
 
 	    }
-	
+	/*
+	 * Method which sets the current weather values on the screen
+	 */
 	void setCurrentWeather()
 	{
 		int textColor = Integer.parseInt(SP.getString("txtColor", ""));
@@ -468,15 +494,30 @@ public class HeliusMainActivity extends Activity {
 		locationTV.setText(location);
 		locationTV.startAnimation(animation);
 		
+		//This is where the problem starts.
+		//Temporary.
+		//Here im just setting the all the four imageviews with a single image which is determined by the current conditions
+		//The images set combined wont exceed 15kb here.
+		//But it throws OutOfMemoryError pointing at the image.setImageResource line.
+		
 		ImageView image = (ImageView) findViewById(R.id.weatherCon);
 		image.setImageResource(Integer.parseInt(SP.getString("wIcon", "")));
+		ImageView image1 = (ImageView) findViewById(R.id.weatherC);
+		image1.setImageResource(Integer.parseInt(SP.getString("wIcon", "")));
+		ImageView image2 = (ImageView) findViewById(R.id.weather);
+		image2.setImageResource(Integer.parseInt(SP.getString("wIcon", "")));
+		ImageView image3 = (ImageView) findViewById(R.id.weathe);
+		image3.setImageResource(Integer.parseInt(SP.getString("wIcon", "")));
 		
 	}
 	    
+	/*
+	 * Should be setting the views concerning predictions.
+	 */
 	void setPredictions()
 	{
 		int textColor = Integer.parseInt(SP.getString("txtColor", ""));
-		String week[] = {"MON","TUE","WED","THU","FRI","SAT","SUN"};
+		String week[] = {"SUN", "MON","TUE","WED","THU","FRI","SAT"};
 		String maxPrediction,minPrediction;
 		TextView max1 = (TextView)findViewById(R.id.max1);
 		TextView max2 = (TextView)findViewById(R.id.max2);
@@ -502,10 +543,12 @@ public class HeliusMainActivity extends Activity {
 			maxPrediction = SP.getString("maxPredictionF", "");
 			minPrediction = SP.getString("minPredictionF", "");
 		}
-
+		
+		String codePrediction = SP.getString("codePrediction", "");
 		
 		String max[] = maxPrediction.split(" ");
 		String min[] = minPrediction.split(" ");
+		String code[] = codePrediction.split(" ");
 		/*
 		 * Setting the Max and Min textviews 
 		 */
@@ -521,13 +564,6 @@ public class HeliusMainActivity extends Activity {
 		day2.setText(week[day++]); if(day == 7) day = 0;
 		day3.setText(week[day++]);
 		
-		//Setting the weather icons
-		ImageView pIcon1 = (ImageView) findViewById(R.id.pIcon1);
-		ImageView pIcon2 = (ImageView) findViewById(R.id.pIcon2);
-		ImageView pIcon3 = (ImageView) findViewById(R.id.pIcon3);
-		pIcon1.setImageResource(Integer.parseInt(SP.getString("pIcon1", "")));
-		pIcon2.setImageResource(Integer.parseInt(SP.getString("pIcon2", "")));
-		pIcon3.setImageResource(Integer.parseInt(SP.getString("pIcon3", "")));
 		//Firing up the animations
 		max1.startAnimation(a);
 		min1.startAnimation(a);
@@ -544,6 +580,9 @@ public class HeliusMainActivity extends Activity {
 		mSystemUiHider.hide();
 	}
   
+	/*
+	 * Loads up custom fonts.
+	 */
     void setFont()
     {
     	TextView temp = (TextView)findViewById(R.id.temperature);
